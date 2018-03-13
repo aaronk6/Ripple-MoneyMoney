@@ -26,6 +26,7 @@
 
 WebBanking{
   version = 1.00,
+  url = "https://s1.ripple.com:51234",
   description = "Fetches balances from the Ripple API and returns them as securities",
   services = { "Ripple" },
 }
@@ -34,8 +35,7 @@ local currencyName = "Ripple"
 local currency = "EUR" -- fixme: Don't hardcode
 local currencyField = "price_eur"
 local marketName = "CoinMarketCap"
-local priceUrl = "https://api.coinmarketcap.com/v1/ticker/cardano/?convert=EUR"
-local balanceUrl = "https://cardanoexplorer.com/api/addresses/summary/"
+local priceUrl = "https://api.coinmarketcap.com/v1/ticker/ripple/?convert=EUR"
 
 local addresses
 local balances
@@ -91,10 +91,12 @@ function queryBalances(addresses)
   local connection = Connection()
   local balances = {}
   local res
+  local postContent
 
   for key, address in pairs(addresses) do
-    res = JSON(connection:request("GET", balanceUrl .. address))
-    table.insert(balances, res:dictionary()["Right"]["caBalance"]["getCoin"])
+    postContent = '{"method":"account_info","params":[{"account":"' .. address .. '"}]}'
+    res = JSON(connection:request("POST", url, postContent, "application/json"))
+    table.insert(balances, res:dictionary()["result"]["account_data"]["Balance"])
   end
 
   return balances
