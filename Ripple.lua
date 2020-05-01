@@ -4,7 +4,7 @@
 -- Username: DdzFFzCqrhf..., DdzFFzCqrhs...
 -- Password: (empty)
 --
--- Copyright (c) 2018 aaronk6
+-- Copyright (c) 2020 aaronk6, gerolino
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 -- SOFTWARE.
 
 WebBanking{
-  version = 1.00,
+  version = 1.01,
   url = "https://s1.ripple.com:51234",
   description = "Fetches balances from the Ripple API and returns them as securities",
   services = { "Ripple" },
@@ -33,9 +33,9 @@ WebBanking{
 
 local currencyName = "Ripple"
 local currency = "EUR" -- fixme: Don't hardcode
-local currencyField = "price_eur"
-local marketName = "CoinMarketCap"
-local priceUrl = "https://api.coinmarketcap.com/v1/ticker/ripple/?convert=EUR"
+local currencyField = "eur"
+local marketName = "CoinGecko"
+local priceUrl = "https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=eur"
 
 local addresses
 local balances
@@ -62,7 +62,7 @@ end
 
 function RefreshAccount (account, since)
   local s = {}
-  local prices = queryPrices()
+  local price = queryPrices()
   local balances = queryBalances(addresses)
 
   for i,v in ipairs(addresses) do
@@ -71,7 +71,7 @@ function RefreshAccount (account, since)
       currency = nil,
       market = marketName,
       quantity = balances[i] / 1000000,
-      price = prices[currencyField],
+      price = price,
     }
   end
 
@@ -84,7 +84,7 @@ end
 function queryPrices()
   local connection = Connection()
   local res = JSON(connection:request("GET", priceUrl))
-  return res:dictionary()[1]
+  return res:dictionary()["ripple"]["eur"]
 end
 
 function queryBalances(addresses)
